@@ -146,7 +146,7 @@ class Marcador {
 let modoDeJuego = null;
 let pala1, pala2, pelota, marcador1, marcador2, cronometroElem;
 let deltaTime = 0, time = Date.now();
-const duracionJuego = 120; // segundos   
+const duracionJuego = 60; // segundos   
 let tiempoRestante = duracionJuego;
 let juegoActivo = false;
 const escenarioElem = document.querySelector(".escenario");
@@ -163,7 +163,7 @@ function mostrarCuentaRegresiva() {
     document.querySelector(".escenario").style.display = "block";
     cuentaRegresivaElem.style.display = "block"
 
-    let count = 3  
+    let count = 5   
     contadorInicio.textContent = count
 
     const intervalo = setInterval(() => {
