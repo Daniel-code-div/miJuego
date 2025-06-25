@@ -163,7 +163,7 @@ function mostrarCuentaRegresiva() {
     document.querySelector(".escenario").style.display = "block";
     cuentaRegresivaElem.style.display = "block"
 
-    let count = 5   
+    let count = 3  
     contadorInicio.textContent = count
 
     const intervalo = setInterval(() => {
