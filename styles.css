@@ -1,0 +1,242 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: black;
+    color: white;
+    font-family: monospace;
+    text-align: center;
+}
+
+/* MENÚ INICIAL */
+#pantalla-inicial {
+    margin-top: 80px;
+    color: cyan;
+}
+
+#pantalla-inicial h1 {
+    font-size: 48px;
+    text-shadow: 0 0 10px cyan;
+    margin-bottom: 20px;
+}
+
+#pantalla-inicial button {
+    background: black;
+    color: #0ff;
+    border: 2px solid #0ff;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-family: monospace;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 10px;
+    box-shadow: 0 0 10px #0ff;
+    transition: 0.3s ease;
+}
+
+#pantalla-inicial button:hover {
+    background: #0ff;
+    color: black;
+    box-shadow: 0 0 20px #0ff;
+}
+
+/* ESCENARIO */
+.escenario {
+    width: 800px;
+    height: 600px;
+    margin: 40px auto 0;
+    border: 6px solid white;
+    position: relative;
+    overflow: hidden;
+    display: none;
+}
+
+.pala {
+    width: 14px;
+    height: 100px;
+    background: white;
+    position: absolute;
+    bottom: 50%;
+    transform: translate(-50%, 50%);
+}
+
+.pala1 { left: 40px; }
+.pala2 { left: 760px; }
+
+.pelota {
+    background: white;
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    bottom: 300px;
+    left: 400px;
+    transform: translate(-50%, 50%);
+    border-radius: 50%;
+}
+
+.red {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 3px);
+    border-left: 6px dotted white;
+}
+
+/* ESTILO NEON */
+.escenario.neon {
+    background: rgb(4, 1, 39);
+    border: 3px solid rgb(0, 242, 255);
+    box-shadow: cyan 0 0 10px, cyan 0 0 10px inset;
+    border-radius: 8px;
+}
+.escenario.neon .pala {
+    background: rgb(5, 255, 226);
+    border-radius: 10px;
+    box-shadow: cyan 0 0 10px;
+    width: 6px;
+}
+.escenario.neon .pelota {
+    background: rgb(255, 245, 109);
+    box-shadow: rgb(255, 225, 30) 0 0 10px;
+    width: 16px;
+    height: 16px;
+}
+.escenario.neon .red {
+    border-color: rgb(255, 125, 246);
+}
+
+/* INFO DEL JUEGO */
+.info-juego {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 2em;
+  color: white;
+  width: 800px;
+  margin: 10px auto;
+}
+
+.marcador {
+    font-size: 64px;
+    color: rgb(255, 125, 246);
+    text-shadow: 0 0 10px rgb(255, 36, 240);
+}
+.cronometro {
+    font-size: 32px;
+    color: yellow;
+    text-shadow: 0 0 10px yellow;
+    user-select: none;
+    pointer-events: none;
+    text-align: center;
+    align-items: center;
+}
+
+/* BOTÓN REINICIAR */
+#reiniciar {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+}
+#boton-reiniciar {
+    background: black;
+    color: #0ff;
+    border: 2px solid #0ff;
+    padding: 12px 30px;
+    font-size: 20px;
+    font-family: monospace;
+    cursor: pointer;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #0ff;
+    transition: 0.3s ease;
+}
+#boton-reiniciar:hover {
+    background: #0ff;
+    color: black;
+    box-shadow: 0 0 20px #0ff;
+}
+
+/* === CUENTA REGRESIVA === */
+#cuenta-regresiva {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 600px;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+
+#contador-inicio {
+    font-size: 150px;
+    font-family: 'Orbitron', sans-serif;
+    color: #0ff;
+    text-shadow: 0 0 30px #0ff;
+    animation: scaleUp 0.5s ease-in-out forwards;
+}
+
+@keyframes scaleUp {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1.2); opacity: 1; }
+}
+
+/* === MODAL GANADOR === */
+#modal-ganador {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 600px;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+
+#modal-ganador .modal-contenido {
+    text-align: center;
+    background: #111;
+    border: 2px solid #0ff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 30px #0ff;
+    font-family: 'Orbitron', sans-serif;
+    color: #0ff;
+        text-align: center;
+    align-items: center;
+}
+
+#modal-ganador h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #0ff;
+        text-align: center;
+    align-items: center;
+}
+
+#modal-ganador button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background: #0ff;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 0 10px #0ff;
+        text-align: center;
+    align-items: center;
+}
+
+

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ping Pong Gamer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- MENÚ DE MODO DE JUEGO -->
+  <div id="pantalla-inicial">
+    <h1>🏓 PING PONG LED</h1>
+    <p>Selecciona un modo de juego:</p>
+    <button id="modo-vs-jugador">🤝 Jugar contra un amigo</button>
+    <button id="modo-vs-pc">🤖 Jugar contra la PC</button>
+  </div>
+
+  <!-- CUENTA REGRESIVA ANTES DE EMPEZAR -->
+<div id="cuenta-regresiva" style="display: none;">
+  <h1 id="contador-inicio">3</h1>
+</div>
+  <!-- ESCENARIO DEL JUEGO -->
+  <div class="escenario neon" style="display: none;">
+    <div class="pala pala1"></div>
+    <div class="pala pala2"></div>
+    <div class="pelota"></div>
+    <div class="red"></div>
+  </div>
+  
+
+  <!-- MARCADOR Y CRONÓMETRO -->
+  <div class="info-juego" style="display: none;">
+    <div class="marcador marcador1">0</div>
+    <div class="cronometro">1:00</div>
+    <div class="marcador marcador2">0</div>
+  </div>
+  
+
+  <!-- MODAL DE GANADOR -->
+<div id="modal-ganador">
+  <div class="modal-contenido">
+    <h2 id="mensaje-ganador"></h2>
+    <button onclick="location.reload()">JUGAR DE NUEVO</button>
+  </div>
+</div>
+
+
+  <!-- BOTÓN DE REINICIAR -->
+  <section id="reiniciar" style="display: none;">
+    <button id="boton-reiniciar">🎮 JUGAR DE NUEVO</button>
+  </section>
+
+  <script src="logica.js"></script>
+</body>
+</html>
