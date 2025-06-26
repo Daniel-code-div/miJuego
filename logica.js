@@ -127,14 +127,6 @@ class Pala extends ObjetoMovil {
             bordes1.minY > bordes2.maxY
         );
     }
-
-    // Para control táctil (solo pala1)
-    setYDesdeTouch(yTouch) {
-        // Limitar dentro de bordes
-        let yLim = Math.min(Math.max(yTouch, this.bordesTablero.minY + this.alto / 2), this.bordesTablero.maxY - this.alto / 2);
-        this.y = yLim;
-        this.elem.style.bottom = this.y + "px";
-    }
 }
 
 class Marcador {
@@ -149,26 +141,28 @@ class Marcador {
     }
 }
 
-// Variables globales
+// VARIABLES DEL JUEGO
 let modoDeJuego = null;
 let pala1, pala2, pelota, marcador1, marcador2, cronometroElem;
 let deltaTime = 0, time = Date.now();
-const duracionJuego = 60; // segundos
+const duracionJuego = 60; // segundos   
 let tiempoRestante = duracionJuego;
 let juegoActivo = false;
-const bordesTablero = new Bordes(0, 800, 0, 600);
+const escenarioElem = document.querySelector(".escenario");
+let bordesTablero;
 const cuentaRegresivaElem = document.getElementById("cuenta-regresiva");
 const contadorInicio = document.getElementById("contador-inicio");
 const modalGanador = document.getElementById("modal-ganador");
 const mensajeGanador = document.getElementById("mensaje-ganador");
 
-function esMovil() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+// Detectar móvil (orientación portrait) para ajustar bordes y estilos
+function esMovilVertical() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerHeight > window.innerWidth;
 }
 
 function mostrarCuentaRegresiva() {
     document.getElementById("pantalla-inicial").style.display = "none";
-    document.querySelector(".escenario").style.display = "block";
+    escenarioElem.style.display = "block";
     cuentaRegresivaElem.style.display = "block";
 
     let count = 3;
@@ -186,12 +180,7 @@ function mostrarCuentaRegresiva() {
     }, 1000);
 }
 
-// Bloquear scroll y pull-to-refresh en móvil
-window.addEventListener('touchmove', function(e) {
-    e.preventDefault();
-}, { passive: false });
-
-// Eventos DOM cargado
+// Evento para iniciar juego
 window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("modo-vs-jugador").addEventListener("click", () => {
         modoDeJuego = "jugador";
@@ -205,30 +194,41 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("boton-reiniciar").addEventListener("click", () => {
         location.reload();
     });
+
+    // Bloquear scroll táctil (pull to refresh)
+    window.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+
+    // Ajustar bordes según orientación/móvil
+    window.addEventListener('resize', ajustarBordes);
 });
+
+function ajustarBordes() {
+    if (esMovilVertical()) {
+        // Pantalla móvil vertical: escenario 360x640
+        bordesTablero = new Bordes(0, window.innerWidth, 0, window.innerHeight);
+    } else {
+        // Escritorio u horizontal
+        bordesTablero = new Bordes(0, 800, 0, 600);
+    }
+}
+
+// Llamar al inicio
+ajustarBordes();
 
 function iniciarJuego() {
     document.getElementById("pantalla-inicial").style.display = "none";
-    document.querySelector(".escenario").style.display = "block";
+    escenarioElem.style.display = "block";
     document.querySelector(".info-juego").style.display = "flex";
 
-    // Detectar si es móvil
-    const esMobile = esMovil();
+    ajustarBordes();
 
-    // Cambiar bordes según orientación y tamaño
-    if (esMobile) {
-        // Si quieres, ajusta bordes para pantalla móvil vertical
-        bordesTablero.minX = 0;
-        bordesTablero.maxX = window.innerWidth;
-        bordesTablero.minY = 0;
-        bordesTablero.maxY = window.innerHeight;
-    }
-
-    // Inicializar objetos
+    // Inicializar objetos con bordes adaptados
     let dir = Math.random() * 2 * Math.PI;
     pelota = new Pelota(bordesTablero, document.querySelector(".pelota"), 300, Math.cos(dir), Math.sin(dir), 0.1);
-
     pala1 = new Pala(bordesTablero, document.querySelector(".pala1"), 300, 1.15, "a", "z");
+
     pala2 = (modoDeJuego === "pc")
         ? new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, null, null)
         : new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, "ArrowUp", "ArrowDown");
@@ -237,28 +237,7 @@ function iniciarJuego() {
     marcador2 = new Marcador(document.querySelector(".marcador2"));
     cronometroElem = document.querySelector(".cronometro");
 
-    // Si es móvil, activar control táctil para pala1
-    if (esMobile) {
-        const escenario = document.querySelector(".escenario");
-        escenario.addEventListener("touchmove", (ev) => {
-            ev.preventDefault(); // evitar scroll
-            // Tomar posición del primer dedo en Y relativo al escenario
-            let touch = ev.touches[0];
-            // Obtener posición Y relativa a la parte inferior del escenario
-            let rect = escenario.getBoundingClientRect();
-            let posY = rect.bottom - touch.clientY; // invertido porque bottom es la referencia
-            pala1.setYDesdeTouch(posY);
-        }, { passive: false });
-    }
-
-    // Ajustar layout visual para móvil (añadir clase)
-    if (esMobile) {
-        document.body.classList.add("modo-movil");
-    } else {
-        document.body.classList.remove("modo-movil");
-    }
-
-    // Iniciar timer
+    // Tiempo
     tiempoRestante = duracionJuego;
     time = Date.now();
 
@@ -266,6 +245,7 @@ function iniciarJuego() {
     requestAnimationFrame(Tick);
 }
 
+// LOOP PRINCIPAL
 function Tick() {
     deltaTime = (Date.now() - time) / 1000;
     time = Date.now();
@@ -338,14 +318,14 @@ function ActualizarCronometro() {
 }
 
 function FinalizarJuego() {
-    juegoActivo = false
+    juegoActivo = false;
     let mensaje = "¡Empate!";
-    
-    if (marcador1.puntos > marcador2.puntos)
-        mensaje = modoDeJuego == "pc" ? "¡GANASTE!" : "Jugador 1 Gana"
-    else if (marcador2.puntos > marcador1.puntos)
-        mensaje = modoDeJuego === "pc" ? "¡La PC gana!" : "¡Jugador 2 gana!"
 
-    mensajeGanador.textContent = mensaje
-    modalGanador.style.display = "flex"
+    if (marcador1.puntos > marcador2.puntos)
+        mensaje = modoDeJuego == "pc" ? "¡GANASTE!" : "Jugador 1 Gana";
+    else if (marcador2.puntos > marcador1.puntos)
+        mensaje = modoDeJuego === "pc" ? "¡La PC gana!" : "¡Jugador 2 gana!";
+
+    mensajeGanador.textContent = mensaje;
+    modalGanador.style.display = "flex";
 }
