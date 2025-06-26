@@ -260,5 +260,10 @@ body {
         text-align: center;
     align-items: center;
 }
+body.modo-movil {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
 
 
