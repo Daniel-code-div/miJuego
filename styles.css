@@ -45,14 +45,14 @@ body {
 
 /* ESCENARIO */
 .escenario {
-    width: 800px;
-    height: 600px;
-    margin: 40px auto 0;
-    border: 6px solid white;
     position: relative;
+    max-width: 800px;
+    max-height: 600px;
+    margin: auto;
+    background-color: black;
     overflow: hidden;
-    display: none;
 }
+
 
 .pala {
     width: 14px;
