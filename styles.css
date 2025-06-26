@@ -52,12 +52,28 @@ body {
   height: 600px;
 }
 
-@media (max-width: 768px) {
-  .escenario {
+@media (max-width: 600px) {
+  body, html {
+    overflow: hidden; /* evita scroll en todo el body */
+    height: 100vh;
     width: 100vw;
-    height: 60vh;
   }
+
+  .escenario {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: relative;
+  }
+
+  /* Ajusta posición y tamaño de las palas y pelota para vertical */
+  .pala1, .pala2 {
+    width: 20px;
+    height: 100px;
+  }
+
+  /* Puedes modificar más estilos para que se vea bien */
 }
+
 
 
 .pala {
