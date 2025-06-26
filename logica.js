@@ -146,7 +146,7 @@ class Marcador {
 let modoDeJuego = null;
 let pala1, pala2, pelota, marcador1, marcador2, cronometroElem;
 let deltaTime = 0, time = Date.now();
-const duracionJuego = 60; // segundos   
+const duracionJuego = 120; // segundos   
 let tiempoRestante = duracionJuego;
 let juegoActivo = false;
 const escenarioElem = document.querySelector(".escenario");
@@ -163,7 +163,7 @@ function mostrarCuentaRegresiva() {
     document.querySelector(".escenario").style.display = "block";
     cuentaRegresivaElem.style.display = "block"
 
-    let count = 5   
+    let count = 3  
     contadorInicio.textContent = count
 
     const intervalo = setInterval(() => {
@@ -194,15 +194,89 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// function iniciarJuego() {
+
+
+//     document.getElementById("pantalla-inicial").style.display = "none"
+//     document.querySelector(".escenario").style.display = "block"
+//     document.querySelector(".info-juego").style.display = "flex"
+
+//     // INICIALIZAR OBJETOS
+//     let dir = Math.random() * 2 * Math.PI;
+//     pelota = new Pelota(bordesTablero, document.querySelector(".pelota"), 300, Math.cos(dir), Math.sin(dir), 0.1)
+//     pala1 = new Pala(bordesTablero, document.querySelector(".pala1"), 300, 1.15, "a", "z")
+
+//     pala2 = (modoDeJuego === "pc")
+//         ? new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, null, null)
+//         : new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, "ArrowUp", "ArrowDown")
+
+//     marcador1 = new Marcador(document.querySelector(".marcador1"))
+//     marcador2 = new Marcador(document.querySelector(".marcador2"))
+//     cronometroElem = document.querySelector(".cronometro")
+
+//     // ⏱️ Iniciar tiempo justo aquí
+//     tiempoRestante = duracionJuego
+//     time = Date.now()
+
+//     juegoActivo = true
+//     requestAnimationFrame(Tick)
+// }
+
+
+// LOOP PRINCIPAL
+
 function iniciarJuego() {
     document.getElementById("pantalla-inicial").style.display = "none";
     document.querySelector(".escenario").style.display = "block";
     document.querySelector(".info-juego").style.display = "flex";
 
+    // Detectar si es móvil (tiene touch)
+    const esMovil = ('ontouchstart' in window);
+
     // INICIALIZAR OBJETOS
     let dir = Math.random() * 2 * Math.PI;
+    
     pelota = new Pelota(bordesTablero, document.querySelector(".pelota"), 300, Math.cos(dir), Math.sin(dir), 0.1);
-    pala1 = new Pala(bordesTablero, document.querySelector(".pala1"), 300, 1.15, "a", "z");
+    
+    // En móvil no usar control por teclas para pala1, usar touch
+    pala1 = new Pala(
+        bordesTablero,
+        document.querySelector(".pala1"),
+        300,
+        1.15,
+        esMovil ? null : "a",
+        esMovil ? null : "z"
+    );
+
+    // Añadir control táctil para pala1 solo en móvil
+    if (esMovil) {
+        const pala1Elem = pala1.elem;
+
+        pala1Elem.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        pala1Elem.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = escenarioElem.getBoundingClientRect();
+
+            // Calculamos la posición Y del toque relativa al borde inferior del escenario
+            let yTouch = rect.bottom - touch.clientY;
+
+            // Limitar posición para que no salga del tablero
+            yTouch = Math.max(bordesTablero.minY + pala1.alto / 2, Math.min(yTouch, bordesTablero.maxY - pala1.alto / 2));
+
+            pala1.y = yTouch;
+            pala1.elem.style.bottom = pala1.y + "px";
+        }, { passive: false });
+
+        pala1Elem.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            // Opcional: aquí podrías frenar la pala si quieres
+            // pala1.velActual = 0;
+        }, { passive: false });
+    }
 
     pala2 = (modoDeJuego === "pc")
         ? new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, null, null)
@@ -220,8 +294,6 @@ function iniciarJuego() {
     requestAnimationFrame(Tick);
 }
 
-
-// LOOP PRINCIPAL
 function Tick() {
     deltaTime = (Date.now() - time) / 1000;
     time = Date.now();
