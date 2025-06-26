@@ -12,8 +12,8 @@ class ObjetoMovil {
         this.bordesTablero = bordesTablero;
         this.vel = vel;
         this.elem = elem;
-        this.x = parseInt(getComputedStyle(elem).left) || 0;
-        this.y = parseInt(getComputedStyle(elem).bottom) || 0;
+        this.x = parseInt(getComputedStyle(elem).left);
+        this.y = parseInt(getComputedStyle(elem).bottom);
         this.ancho = parseInt(getComputedStyle(elem).width);
         this.alto = parseInt(getComputedStyle(elem).height);
     }
@@ -74,8 +74,6 @@ class Pelota extends ObjetoMovil {
         this.dirX = dirX;
         this.dirY = dirY;
         super.Resetear();
-        this.elem.style.left = this.x + "px";
-        this.elem.style.bottom = this.y + "px";
     }
 }
 
@@ -109,7 +107,7 @@ class Pala extends ObjetoMovil {
     Mover() {
         this.y += this.velActual * deltaTime;
         if (this.y + this.alto / 2 > this.bordesTablero.maxY) this.y = this.bordesTablero.maxY - this.alto / 2;
-        if (this.y - this.alto / 2 < this.bordesTablero.minY) this.y = this.bordesTablero.minY + this.alto / 2;
+        if (this.y - this.alto / 2 < this.bordesTablero.minY) this.y = this.alto / 2;
         this.elem.style.bottom = this.y + "px";
     }
 
@@ -129,6 +127,14 @@ class Pala extends ObjetoMovil {
             bordes1.minY > bordes2.maxY
         );
     }
+
+    // Para control táctil (solo pala1)
+    setYDesdeTouch(yTouch) {
+        // Limitar dentro de bordes
+        let yLim = Math.min(Math.max(yTouch, this.bordesTablero.minY + this.alto / 2), this.bordesTablero.maxY - this.alto / 2);
+        this.y = yLim;
+        this.elem.style.bottom = this.y + "px";
+    }
 }
 
 class Marcador {
@@ -143,24 +149,27 @@ class Marcador {
     }
 }
 
-// VARIABLES DEL JUEGO
+// Variables globales
 let modoDeJuego = null;
 let pala1, pala2, pelota, marcador1, marcador2, cronometroElem;
 let deltaTime = 0, time = Date.now();
-const duracionJuego = 60; // segundos   
+const duracionJuego = 60; // segundos
 let tiempoRestante = duracionJuego;
 let juegoActivo = false;
-const escenarioElem = document.querySelector(".escenario");
 const bordesTablero = new Bordes(0, 800, 0, 600);
-const cuentaRegresivaElem = document.getElementById("cuenta-regresiva")
-const contadorInicio = document.getElementById("contador-inicio")
-const modalGanador = document.getElementById("modal-ganador")
-const mensajeGanador = document.getElementById("mensaje-ganador")
+const cuentaRegresivaElem = document.getElementById("cuenta-regresiva");
+const contadorInicio = document.getElementById("contador-inicio");
+const modalGanador = document.getElementById("modal-ganador");
+const mensajeGanador = document.getElementById("mensaje-ganador");
+
+function esMovil() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
 
 function mostrarCuentaRegresiva() {
     document.getElementById("pantalla-inicial").style.display = "none";
-    escenarioElem.style.display = "block";
-    cuentaRegresivaElem.style.display = "block"
+    document.querySelector(".escenario").style.display = "block";
+    cuentaRegresivaElem.style.display = "block";
 
     let count = 3;
     contadorInicio.textContent = count;
@@ -177,6 +186,12 @@ function mostrarCuentaRegresiva() {
     }, 1000);
 }
 
+// Bloquear scroll y pull-to-refresh en móvil
+window.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+}, { passive: false });
+
+// Eventos DOM cargado
 window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("modo-vs-jugador").addEventListener("click", () => {
         modoDeJuego = "jugador";
@@ -194,88 +209,60 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function iniciarJuego() {
     document.getElementById("pantalla-inicial").style.display = "none";
-    escenarioElem.style.display = "block";
+    document.querySelector(".escenario").style.display = "block";
     document.querySelector(".info-juego").style.display = "flex";
 
-    const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 'ontouchstart' in window;
+    // Detectar si es móvil
+    const esMobile = esMovil();
 
-    // Ajustar bordes y escenario si es móvil (modo vertical)
-    if (esMovil) {
-        // Por simplicidad el tablero será toda la pantalla visible (ajusta si quieres)
+    // Cambiar bordes según orientación y tamaño
+    if (esMobile) {
+        // Si quieres, ajusta bordes para pantalla móvil vertical
         bordesTablero.minX = 0;
         bordesTablero.maxX = window.innerWidth;
         bordesTablero.minY = 0;
         bordesTablero.maxY = window.innerHeight;
-
-        // Ajustar tamaño de escenario para móvil
-        escenarioElem.style.width = window.innerWidth + "px";
-        escenarioElem.style.height = window.innerHeight + "px";
-
-        // Inicializar posición de pala1 horizontal (al centro abajo)
-        pala1 = new Pala(bordesTablero, document.querySelector(".pala1"), 600, 1.15, null, null);
-        pala1.x = bordesTablero.maxX / 2;
-        pala1.y = 40; // pegada abajo
-        pala1.elem.style.left = pala1.x + "px";
-        pala1.elem.style.bottom = pala1.y + "px";
-
-        // La pala2 sí estará visible, posición normal izquierda
-        pala2 = (modoDeJuego === "pc")
-            ? new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, null, null)
-            : new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, "ArrowUp", "ArrowDown");
-
-    } else {
-        // PC normal
-        bordesTablero.minX = 0;
-        bordesTablero.maxX = 800;
-        bordesTablero.minY = 0;
-        bordesTablero.maxY = 600;
-
-        escenarioElem.style.width = "800px";
-        escenarioElem.style.height = "600px";
-
-        pala1 = new Pala(bordesTablero, document.querySelector(".pala1"), 300, 1.15, "a", "z");
-        pala2 = (modoDeJuego === "pc")
-            ? new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, null, null)
-            : new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, "ArrowUp", "ArrowDown");
     }
 
-    pelota = new Pelota(bordesTablero, document.querySelector(".pelota"), 300, 1, 1, 0.1);
-    // Centrar pelota
-    pelota.x = bordesTablero.maxX / 2;
-    pelota.y = bordesTablero.maxY / 2;
-    pelota.elem.style.left = pelota.x + "px";
-    pelota.elem.style.bottom = pelota.y + "px";
+    // Inicializar objetos
+    let dir = Math.random() * 2 * Math.PI;
+    pelota = new Pelota(bordesTablero, document.querySelector(".pelota"), 300, Math.cos(dir), Math.sin(dir), 0.1);
+
+    pala1 = new Pala(bordesTablero, document.querySelector(".pala1"), 300, 1.15, "a", "z");
+    pala2 = (modoDeJuego === "pc")
+        ? new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, null, null)
+        : new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, "ArrowUp", "ArrowDown");
 
     marcador1 = new Marcador(document.querySelector(".marcador1"));
     marcador2 = new Marcador(document.querySelector(".marcador2"));
     cronometroElem = document.querySelector(".cronometro");
 
+    // Si es móvil, activar control táctil para pala1
+    if (esMobile) {
+        const escenario = document.querySelector(".escenario");
+        escenario.addEventListener("touchmove", (ev) => {
+            ev.preventDefault(); // evitar scroll
+            // Tomar posición del primer dedo en Y relativo al escenario
+            let touch = ev.touches[0];
+            // Obtener posición Y relativa a la parte inferior del escenario
+            let rect = escenario.getBoundingClientRect();
+            let posY = rect.bottom - touch.clientY; // invertido porque bottom es la referencia
+            pala1.setYDesdeTouch(posY);
+        }, { passive: false });
+    }
+
+    // Ajustar layout visual para móvil (añadir clase)
+    if (esMobile) {
+        document.body.classList.add("modo-movil");
+    } else {
+        document.body.classList.remove("modo-movil");
+    }
+
+    // Iniciar timer
     tiempoRestante = duracionJuego;
     time = Date.now();
 
     juegoActivo = true;
-
-    // Detectar touch para mover pala1 horizontal solo en móvil
-    if (esMovil) {
-        document.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = escenarioElem.getBoundingClientRect();
-
-            // mover solo si toca la mitad inferior
-            if (touch.clientY > rect.top + rect.height / 2) {
-                let xTouch = touch.clientX - rect.left;
-
-                // Limitar para que no se salga de los bordes
-                xTouch = Math.max(bordesTablero.minX + pala1.ancho / 2,
-                                  Math.min(xTouch, bordesTablero.maxX - pala1.ancho / 2));
-
-                pala1.x = xTouch;
-                pala1.elem.style.left = pala1.x + "px";
-            }
-        }, { passive: false });
-    }
-
     requestAnimationFrame(Tick);
 }
 
@@ -291,39 +278,26 @@ function Tick() {
 
 function Update() {
     pelota.Mover();
-
-    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 'ontouchstart' in window) {
-        // móvil: pala1 se mueve por touch, solo pala2 mueve normalmente
-        if (modoDeJuego === "pc") {
-            // IA para pala2 (vertical movimiento)
-            let objetivoY = pelota.y;
-            let diferencia = objetivoY - pala2.y;
-            pala2.velActual = Math.sign(diferencia) * 200; // velocidad fija
-            pala2.Mover();
-        } else {
-            // jugador 2 controla con teclado
-            pala2.Frenar();
-            pala2.Mover();
-        }
-    } else {
-        // pc: mover ambas palas con teclado
-        pala1.Frenar();
-        pala1.Mover();
-
-        if (modoDeJuego === "pc") {
-            let objetivoY = pelota.y;
-            let diferencia = objetivoY - pala2.y;
-            pala2.velActual = Math.sign(diferencia) * 200; // velocidad fija
-            pala2.Mover();
-        } else {
-            pala2.Frenar();
-            pala2.Mover();
-        }
-    }
-
+    MoverPalas();
     ComprobarPalazo();
     ComprobarGol();
     ActualizarCronometro();
+}
+
+function MoverPalas() {
+    pala1.Frenar();
+    pala1.Mover();
+
+    if (modoDeJuego === "pc") {
+        // IA para pala2
+        let objetivoY = pelota.y;
+        let diferencia = objetivoY - pala2.y;
+        pala2.velActual = Math.sign(diferencia) * 200; // velocidad fija
+    } else {
+        pala2.Frenar();
+    }
+
+    pala2.Mover();
 }
 
 function ComprobarPalazo() {
@@ -364,13 +338,14 @@ function ActualizarCronometro() {
 }
 
 function FinalizarJuego() {
-    juegoActivo = false;
+    juegoActivo = false
     let mensaje = "¡Empate!";
+    
     if (marcador1.puntos > marcador2.puntos)
-        mensaje = modoDeJuego == "pc" ? "¡GANASTE!" : "Jugador 1 gana";
+        mensaje = modoDeJuego == "pc" ? "¡GANASTE!" : "Jugador 1 Gana"
     else if (marcador2.puntos > marcador1.puntos)
-        mensaje = modoDeJuego === "pc" ? "¡La PC gana!" : "Jugador 2 gana";
+        mensaje = modoDeJuego === "pc" ? "¡La PC gana!" : "¡Jugador 2 gana!"
 
-    mensajeGanador.textContent = mensaje;
-    modalGanador.style.display = "flex";
+    mensajeGanador.textContent = mensaje
+    modalGanador.style.display = "flex"
 }
