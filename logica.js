@@ -230,22 +230,13 @@ function iniciarJuego() {
     document.querySelector(".escenario").style.display = "block";
     document.querySelector(".info-juego").style.display = "flex";
 
-    // Detectar si es un dispositivo móvil
     const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 'ontouchstart' in window;
-
-    // Redimensionar el escenario si es móvil
-    if (esMovil) {
-        const escenario = document.querySelector(".escenario");
-        escenario.style.width = "100vw";
-        escenario.style.height = "60vh";
-    }
 
     // Inicializar objetos
     let dir = Math.random() * 2 * Math.PI;
 
     pelota = new Pelota(bordesTablero, document.querySelector(".pelota"), 300, Math.cos(dir), Math.sin(dir), 0.1);
 
-    // Si es móvil, no usar teclas para la pala1
     pala1 = new Pala(
         bordesTablero,
         document.querySelector(".pala1"),
@@ -255,27 +246,21 @@ function iniciarJuego() {
         esMovil ? null : "z"
     );
 
-    // Control táctil para pala1 (tocando el lado izquierdo de la pantalla)
     if (esMovil) {
         document.addEventListener('touchmove', function (e) {
             const touch = e.touches[0];
             const rect = escenarioElem.getBoundingClientRect();
 
-            // Solo mover si se toca el lado izquierdo de la pantalla
+            // Solo mover si toca el lado izquierdo
             if (touch.clientX < window.innerWidth / 2) {
                 let yTouch = rect.bottom - touch.clientY;
-
-                // Limitar para que la pala no se salga
-                yTouch = Math.max(bordesTablero.minY + pala1.alto / 2,
-                                  Math.min(yTouch, bordesTablero.maxY - pala1.alto / 2));
-
+                yTouch = Math.max(bordesTablero.minY + pala1.alto / 2, Math.min(yTouch, bordesTablero.maxY - pala1.alto / 2));
                 pala1.y = yTouch;
                 pala1.elem.style.bottom = pala1.y + "px";
             }
         }, { passive: false });
     }
 
-    // Inicializar pala2 según modo de juego
     pala2 = (modoDeJuego === "pc")
         ? new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, null, null)
         : new Pala(bordesTablero, document.querySelector(".pala2"), 300, 1.15, "ArrowUp", "ArrowDown");
@@ -284,14 +269,12 @@ function iniciarJuego() {
     marcador2 = new Marcador(document.querySelector(".marcador2"));
     cronometroElem = document.querySelector(".cronometro");
 
-    // Iniciar tiempo
     tiempoRestante = duracionJuego;
     time = Date.now();
 
     juegoActivo = true;
     requestAnimationFrame(Tick);
 }
-
 
 function Tick() {
     deltaTime = (Date.now() - time) / 1000;
